@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Chatroom</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            flex-grow: 1;
+            overflow-y: auto;
+            background-color: #ffffff;
+            padding: 20px;
+        }
+
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 60%;
+            word-wrap: break-word;
+        }
+
+        .message .username {
+            font-weight: bold;
+        }
+
+        .message.self {
+            background-color: #d1e7dd;
+            align-self: flex-end;
+        }
+
+        .message.other {
+            background-color: #e9ecef;
+            align-self: flex-start;
+        }
+
+        .input-container {
+            display: flex;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .chat-input {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .chat-input:focus {
+            border-color: #007bff;
+        }
+
+        .send-button {
+            margin-left: 10px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .send-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<div class="chat-container" id="chat-container">
+    <!-- Messages will appear here -->
+    <div class="message self">
+        <span class="username">You:</span> Hello everyone!
+    </div>
+    <div class="message other">
+        <span class="username">Alice:</span> Hi there!
+    </div>
+</div>
+<div class="input-container">
+    <input type="text" class="chat-input" id="chat-input" placeholder="Type your message here...">
+    <button class="send-button" id="send-button">Send</button>
+</div>
+
+<script src="poll.js" defer></script>
+<script>
+    const chatContainer = document.getElementById('chat-container');
+    const chatInput = document.getElementById('chat-input');
+    const sendButton = document.getElementById('send-button');
+
+    function addMessage(username, message, isSelf) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', isSelf ? 'self' : 'other');
+
+        const usernameSpan = document.createElement('span');
+        usernameSpan.classList.add('username');
+        usernameSpan.textContent = isSelf ? 'You:' : `${username}:`;
+
+        messageDiv.appendChild(usernameSpan);
+        messageDiv.appendChild(document.createTextNode(` ${message}`));
+
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    sendButton.addEventListener('click', () => {
+        const message = chatInput.value.trim();
+        if (message) {
+            addMessage('You', message, true);
+            chatInput.value = '';
+
+            /*
+            // Simulate receiving a message from another user
+            setTimeout(() => {
+                addMessage('Alice', 'Got it!', false);
+            }, 1000);
+             */
+
+            fetch('http://99.245.105.87:25565/ChatAPI', {
+                method: 'POST', // or 'PUT', depending on your use case
+                headers: {
+                    'Content-Type': 'text/plain' // Specify content type
+                },
+                body: message
+            })
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Request sent successfully');
+                    } else {
+                        console.error('Request failed with status:', response.status);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error sending request:', error);
+                });
+
+        }
+    });
+
+    chatInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            sendButton.click();
+        }
+    });
+</script>
+</body>
+</html>

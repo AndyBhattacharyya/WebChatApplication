@@ -1,0 +1,51 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+title HTTP Chatroom User Initialization
+index.html -> Servlet: HTTP POST
+note left
+HTTP POST
+user="username"
+end note
+Servlet -> index.html: HTTP 302: Redirect: "chatroom.html"
+note right
+HTTP 302 Redirect
+Redirect: /chatroom.html
+Cookie: "user"="username"
+Referer: "chatroom.html"
+end note
+index.html -> chatroom.html: HTTP GET
+note left
+HTTP GET
+Cookie: "user"="username"
+end note
+newpage  Sending Message Sequence
+chatroom.html -> ChatAPI: js: sendButton Event
+note left
+HTTP POST
+Cookie: "user"="usernameA"
+
+"this is a message"
+end note
+ChatAPI -> "chatroom.html": HTTP 200
+note right
+HTTP 200
+end note
+newpage Polling Message Sequence
+chatroom.html -> ChatAPI: poll.js: fetch()
+note left
+HTTP GET
+Cookie: "user" = "usernameA"
+end note
+ChatAPI -> chatroom.html: HTTP 200
+note right
+HTTP 200
+ContentType=text/html
+
+"usernameB|Hey man how are you doing!?"
+end note
+ChatAPI -> chatroom.html: No new message
+
+@enduml
