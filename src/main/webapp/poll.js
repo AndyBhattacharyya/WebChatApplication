@@ -1,16 +1,28 @@
-const endpoint = "http://99.245.105.87:25565/ChatAPI";
+const endpoint = "http://localhost:8080/ChatAPI";
 
 function pollandupdate(){
     fetch(endpoint)
-        .then(response => response.text())
+        .then(response => {
+            //Check if API returns content-length=0
+            let content_length = response.headers.get("Content-Length");
+            if (response.redirected){
+                window.location.href=response.url;
+                clearInterval(pollID);
+                throw new Error("Invalid Cookie");
+            }
+            else if(content_length==0){
+                throw new Error("No message to update");
+            }
+            else{
+                return response.text();
+            }
+        })
         .then(text => {
             //Current Format: username|message
             let message = text.split('|');
-            if(message[0]!=="default"){
-                addMessage(message[0],message[1],false);
-            }
+            addMessage(message[0],message[1],false);
         })
-        .catch(e => {console.log("Some type of error")})
+        .catch(e => e)
 }
 
 //use to clear up polling mechanism whenever

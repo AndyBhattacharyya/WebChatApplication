@@ -7,14 +7,14 @@ title HTTP Chatroom User Initialization
 index.html -> Servlet: HTTP POST
 note left
 HTTP POST
-user="username"
+Content-Type: application/x-www-form-urlencoded
+username="username"&post_type=register
 end note
 Servlet -> index.html: HTTP 302: Redirect: "chatroom.html"
 note right
 HTTP 302 Redirect
-Redirect: /chatroom.html
-Cookie: "user"="username"
-Referer: "chatroom.html"
+Location: /chatroom.html
+Set-Cookie: "user"="username"
 end note
 index.html -> chatroom.html: HTTP GET
 note left
@@ -25,13 +25,15 @@ newpage  Sending Message Sequence
 chatroom.html -> ChatAPI: js: sendButton Event
 note left
 HTTP POST
+Content-Type: text/plain
 Cookie: "user"="usernameA"
 
 "this is a message"
 end note
 ChatAPI -> "chatroom.html": HTTP 200
 note right
-HTTP 200
+(1) Check validity of cookie, if invalid/not authenticated/ redirect
+(2)
 end note
 newpage Polling Message Sequence
 chatroom.html -> ChatAPI: poll.js: fetch()
