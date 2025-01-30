@@ -4,13 +4,13 @@
 autonumber
 
 title HTTP Chatroom User Initialization
-index.html -> Servlet: HTTP POST
+index.html -> ChatAPI: HTTP POST
 note left
 HTTP POST
 Content-Type: application/x-www-form-urlencoded
 username="username"&post_type=register
 end note
-Servlet -> index.html: HTTP 302: Redirect: "chatroom.html"
+ChatAPI -> index.html: HTTP 302: Redirect: "/chatroom.html"
 note right
 HTTP 302 Redirect
 Location: /chatroom.html
@@ -23,7 +23,7 @@ Cookie: "user"="username"
 end note
 newpage  Sending Message Sequence
 chatroom.html -> ChatAPI: js: sendButton Event
-note left
+note right
 HTTP POST
 Content-Type: text/plain
 Cookie: "user"="usernameA"
@@ -31,28 +31,44 @@ Cookie: "user"="usernameA"
 "this is a message"
 end note
 ChatAPI -> "chatroom.html": HTTP 200
-note right
-(1) HTTP 302: Check validity of cookie, if invalid/not authenticated/ redirect
-(2) Other content-length=0 if no message to update
-(3) HTTP 200
+note left
+(Option 1) redirect if cookie is invalid
+forcing user to register and obtain a cookie
+
+HTTP 302 Redirect
+Location: /index.html
+
+(Option 2)  Message received successfully
+
+HTTP 200
+Content-Type = text/html
+Content-Length = 0
 end note
 newpage Polling Message Sequence
 chatroom.html -> ChatAPI: poll.js: fetch()
-note left
+note right
 HTTP GET
 Cookie: "user" = "usernameA"
 end note
 ChatAPI -> chatroom.html: HTTP 200
-note right
-HTTP 200
-ContentType=text/html
+note left
+(Option 1) Message available for user,
 
-"usernameB|Hey man how are you doing!?"
-end note
-ChatAPI -> chatroom.html: No new message
-note right
+HTTP 200
+Content-Type=application/json
+
+{"user" : "Andy", "message" : "wassup"}
+
+(Option 2) No message for user
+
 HTTP 200
 Content-Length=0
-end note
+Content-Type=application/json
 
+(Option 3) redirect if cookie is invalid
+forcing user to register and obtain a cookie
+
+HTTP 302 Redirect
+Location: /index.html
+end note
 @enduml
