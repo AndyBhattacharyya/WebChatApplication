@@ -13,12 +13,13 @@ public class Chatroom {
         users_chatroom.remove(user);
     }
     public synchronized void sendMessageToChatRoom(Cookie user, String message){
-        String message_format = users_chatroom.get(user).getUsername() +"|"+message;
+        String chatUser = users_chatroom.get(user).getUsername();
+        String message_json = "{ \"user\":\"" +chatUser+"\", \"message\":\""+message+"\" }";
         for(Cookie key : users_chatroom.keySet()){
             if(key.equals(user)){
                 continue;
             }
-            users_chatroom.get(key).addMessageToQueue(message_format);
+            users_chatroom.get(key).addMessageToQueue(message_json);
         }
     }
     public synchronized User getUserFromChatRoom(Cookie user){

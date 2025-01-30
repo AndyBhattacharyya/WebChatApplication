@@ -36,7 +36,7 @@ public class ChatAPI extends HttpServlet {
         * consider multithreading implications
         * understand that messages will be in format: "username|hey there whats up";
          */
-        resp.setContentType("text/html");
+        resp.setContentType("application/json");
         PrintWriter out = resp.getWriter();
         Cookie user = null;
         if((user=authorize(req))==null){
@@ -89,23 +89,18 @@ public class ChatAPI extends HttpServlet {
             }
 
             String message = stringBuilder.toString();
-
+            //Before message sent, validate session
             Cookie[] cookies = req.getCookies();
-            Cookie usercookie = null;
-            if(cookies != null) {
-                for(int i = 0; i<cookies.length; i++) {
-                    if(cookies[i].getName().equals("user")) {
-                        usercookie = cookies[i];
-                    }
-                }
+            Cookie user = null;
+            if((user=authorize(req))==null){
+                invalidCookieHandler(resp);
             }
-            if(usercookie != null) {
-                globalchat.sendMessageToChatRoom(usercookie, message);
+            else{
+                globalchat.sendMessageToChatRoom(user, message);
+                resp.setStatus(HttpServletResponse.SC_OK);
+                resp.setContentType("text/html");
+                resp.setContentLength(0);
             }
-            resp.setStatus(HttpServletResponse.SC_OK);
-            resp.setContentType("text/html");
-            resp.setContentLength(0);
-
         }
     }
 }

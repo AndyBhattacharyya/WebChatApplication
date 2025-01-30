@@ -14,13 +14,14 @@ function pollandupdate(){
                 throw new Error("No message to update");
             }
             else{
-                return response.text();
+                return response.json();
             }
         })
         .then(text => {
             //Current Format: username|message
-            let message = text.split('|');
-            addMessage(message[0],message[1],false);
+            let userOfMessage = text.user;
+            let message = text.message;
+            addMessage(userOfMessage,message,false);
         })
         .catch(e => e)
 }

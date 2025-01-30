@@ -32,8 +32,9 @@ Cookie: "user"="usernameA"
 end note
 ChatAPI -> "chatroom.html": HTTP 200
 note right
-(1) Check validity of cookie, if invalid/not authenticated/ redirect
-(2)
+(1) HTTP 302: Check validity of cookie, if invalid/not authenticated/ redirect
+(2) Other content-length=0 if no message to update
+(3) HTTP 200
 end note
 newpage Polling Message Sequence
 chatroom.html -> ChatAPI: poll.js: fetch()
@@ -49,5 +50,9 @@ ContentType=text/html
 "usernameB|Hey man how are you doing!?"
 end note
 ChatAPI -> chatroom.html: No new message
+note right
+HTTP 200
+Content-Length=0
+end note
 
 @enduml
