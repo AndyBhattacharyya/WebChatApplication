@@ -1,33 +1,22 @@
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+
 
 public class ChatAPI extends HttpServlet {
 
     private Chatroom globalchat = new Chatroom();
     private final String COOKIE_NAME = "user";
 
-    private Cookie authorize(HttpServletRequest req){
-        Cookie[] cookies = req.getCookies();
-        //Null array handling
-        if(req.getCookies() != null) {
-            for(int i = 0; i<cookies.length; i++) {
-                //additional error handling, in case situation cookie is tampered w/ and only given name
-                if(cookies[i].getName().equals(COOKIE_NAME) && cookies[i].getValue() != null) {
-                    return cookies[i];
-                }
-            }
-        }
-        return null;
+    private User authorize(HttpServletRequest req){
+        HttpSession session = req.getSession();
+        return (User) session.getAttribute(COOKIE_NAME);
     }
 
-    private void invalidCookieHandler(HttpServletResponse resp) throws IOException {
+    private void invalidSessionHandler(HttpServletResponse resp) throws IOException {
         resp.sendRedirect("/index.html");
     }
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -36,15 +25,16 @@ public class ChatAPI extends HttpServlet {
         * consider multithreading implications
         * understand that messages will be in format: "username|hey there whats up";
          */
+        HttpSession session = req.getSession(false);
         resp.setContentType("application/json");
         PrintWriter out = resp.getWriter();
-        Cookie user = null;
-        if((user=authorize(req))==null){
-            invalidCookieHandler(resp);
+        User user;
+        if(session == null || (user=(User) session.getAttribute(COOKIE_NAME))==null){
+            invalidSessionHandler(resp);
         }
         else{
             //polling has potential to return null message, perhaps utilize http content length=0 feature
-            String message = globalchat.getUserFromChatRoom(user).getMessageFromQueue();
+            String message = user.getMessageFromQueue();
             if(message!=null)
                 out.println(message);
             else
@@ -71,9 +61,19 @@ public class ChatAPI extends HttpServlet {
             checkUserExistence()
             registerUser()
              */
+
+            /*
             Cookie register_cookie = new Cookie("user",username);
             globalchat.addUserToChatRoom(register_cookie);
             resp.addCookie(register_cookie);
+            resp.sendRedirect("/chatroom.html");
+             */
+            HttpSession session = req.getSession(true);
+            if(session.getAttribute(COOKIE_NAME)==null){
+                User tmp = new User(username);
+                session.setAttribute(COOKIE_NAME, tmp);
+                globalchat.addUserToChatRoom(tmp);
+            }
             resp.sendRedirect("/chatroom.html");
         }
 
@@ -90,10 +90,9 @@ public class ChatAPI extends HttpServlet {
 
             String message = stringBuilder.toString();
             //Before message sent, validate session
-            Cookie[] cookies = req.getCookies();
-            Cookie user = null;
+            User user;
             if((user=authorize(req))==null){
-                invalidCookieHandler(resp);
+                invalidSessionHandler(resp);
             }
             else{
                 globalchat.sendMessageToChatRoom(user, message);

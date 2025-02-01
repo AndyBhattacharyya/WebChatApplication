@@ -1,29 +1,25 @@
 import jakarta.servlet.http.Cookie;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
 
 public class Chatroom {
 
-    private HashMap<Cookie, User> users_chatroom = new HashMap<>();
-    public synchronized void addUserToChatRoom(Cookie user){
-        users_chatroom.put(user, new User(user));
+    private List<User> users_chatroom = new ArrayList<>();
+    public synchronized void addUserToChatRoom(User user){
+        users_chatroom.add(user);
     }
-    public synchronized void removeUserFromChatRoom(Cookie user){
+    public synchronized void removeUserFromChatRoom(User user){
         users_chatroom.remove(user);
     }
-    public synchronized void sendMessageToChatRoom(Cookie user, String message){
-        String chatUser = users_chatroom.get(user).getUsername();
+    public synchronized void sendMessageToChatRoom(User user, String message){
+        String chatUser = user.getUsername();
         String message_json = "{ \"user\":\"" +chatUser+"\", \"message\":\""+message+"\" }";
-        for(Cookie key : users_chatroom.keySet()){
-            if(key.equals(user)){
-                continue;
+        for(User tmp_user: users_chatroom){
+            if(tmp_user!=user){
+                tmp_user.addMessageToQueue(message_json);
             }
-            users_chatroom.get(key).addMessageToQueue(message_json);
         }
-    }
-    public synchronized User getUserFromChatRoom(Cookie user){
-        return users_chatroom.get(user);
     }
 
 

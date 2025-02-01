@@ -5,13 +5,11 @@ import java.util.Queue;
 
 public class User {
 
-    private Cookie UserCookie;
     private String username;
     private Queue<String> messages = new LinkedList<String>();
 
-    public User(Cookie identifier){
-        this.UserCookie = identifier;
-        this.username = identifier.getValue();
+    public User(String username){
+        this.username = username;
     }
     public String getUsername(){
         return this.username;
