@@ -1,5 +1,13 @@
 const endpoint = "http://localhost:8080/ChatAPI";
 
+function beginSSE(){
+    let evtSource = new EventSource(endpoint);
+    evtSource.onmessage = (event) => {console.log(event.data)}
+}
+beginSSE();
+
+
+/*
 function pollandupdate(){
     fetch(endpoint)
         .then(response => {
@@ -28,4 +36,4 @@ function pollandupdate(){
 
 //use to clear up polling mechanism whenever
 let pollID = setInterval(pollandupdate, 1000);
-
+ */

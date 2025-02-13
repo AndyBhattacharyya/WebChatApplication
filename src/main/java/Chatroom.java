@@ -17,7 +17,8 @@ public class Chatroom {
         String message_json = "{ \"user\":\"" +chatUser+"\", \"message\":\""+message+"\" }";
         for(User tmp_user: users_chatroom){
             if(tmp_user!=user){
-                tmp_user.addMessageToQueue(message_json);
+                //tmp_user.addMessageToQueue(message_json);
+                tmp_user.writeMessageToStream(message_json);
             }
         }
     }
