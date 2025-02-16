@@ -51,7 +51,8 @@ public class ChatAPI extends HttpServlet {
                     out.println("data: "+message + "\r\n\r\n");
                     out.flush();
                 }
-            } catch(InterruptedException e){resp.setStatus(HttpServletResponse.SC_REQUEST_TIMEOUT);}
+            } catch(InterruptedException e){
+                resp.setStatus(HttpServletResponse.SC_REQUEST_TIMEOUT);}
         }
     }
 

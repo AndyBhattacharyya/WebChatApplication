@@ -27,7 +27,6 @@ public class User{
     public void interruptAndSwapThread(Thread newThread) throws InterruptedException{
         if(tmpUserThread!=null){
             tmpUserThread.interrupt();
-            tmpUserThread.join();
         }
         tmpUserThread = newThread;
     }
