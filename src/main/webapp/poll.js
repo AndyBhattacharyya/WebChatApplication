@@ -2,7 +2,10 @@ const endpoint = "http://localhost:8080/ChatAPI";
 
 function beginSSE(){
     let evtSource = new EventSource(endpoint);
-    evtSource.onmessage = (event) => {console.log(event.data)}
+    evtSource.onmessage = (event) => {
+        let messageJSON = JSON.parse(event.data);
+        addMessage(messageJSON.user,messageJSON.message,false);
+    }
 }
 beginSSE();
 

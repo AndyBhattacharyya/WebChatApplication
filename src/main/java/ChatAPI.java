@@ -42,9 +42,16 @@ public class ChatAPI extends HttpServlet {
             resp.setContentType("text/event-stream");
             resp.setHeader("Cache-Control", "no-cache");
             resp.setHeader("Access-Control-Allow-Origin", "*");
-            try {
-                user.beginReadingMessages(resp);
-            } catch(InterruptedException e){System.out.println("Error");}
+            PrintWriter out = resp.getWriter();
+
+            try{
+                user.interruptAndSwapThread(Thread.currentThread());
+                while(true){
+                    String message = user.readMessage();
+                    out.println("data: "+message + "\r\n\r\n");
+                    out.flush();
+                }
+            } catch(InterruptedException e){resp.setStatus(HttpServletResponse.SC_REQUEST_TIMEOUT);}
         }
     }
 

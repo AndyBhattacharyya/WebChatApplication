@@ -12,24 +12,28 @@ public class User{
     ///implementation of stream based messaging
     private PipedReader in;
     private BufferedReader bin;
-    private PrintWriter pin;
-    private HttpServletResponse channelSSE;
-    private Thread pushMessages;
+    private PrintWriter out;
+    private Thread tmpUserThread;
+
 
     public User(String username) throws IOException {
         this.username = username;
         in = new PipedReader();
         bin = new BufferedReader(in);
-        pin = new PrintWriter(new PipedWriter(in));
+        out = new PrintWriter(new PipedWriter(in));
+        tmpUserThread = null;
     }
 
-    public void beginReadingMessages(HttpServletResponse resp) throws IOException, InterruptedException {
-        PrintWriter out = resp.getWriter();
-        String message;
-        while((message=bin.readLine()) != null) {
-            out.print(message+"\r\n");
-            out.flush();
+    public void interruptAndSwapThread(Thread newThread) throws InterruptedException{
+        if(tmpUserThread!=null){
+            tmpUserThread.interrupt();
+            tmpUserThread.join();
         }
+        tmpUserThread = newThread;
+    }
+
+    public String readMessage() throws IOException{
+        return bin.readLine();
     }
 
     public String getUsername(){
@@ -43,7 +47,8 @@ public class User{
         return messages.poll();
     }
 
-    synchronized public void writeMessageToStream(String message){
-        pin.println(message);
+    public void writeMessageToStream(String message){
+        out.println(message);
+        out.flush();
     }
 }
