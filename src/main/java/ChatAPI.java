@@ -26,19 +26,33 @@ public class ChatAPI extends HttpServlet {
         * understand that messages will be in format: "username|hey there whats up";
          */
         HttpSession session = req.getSession(false);
-        resp.setContentType("application/json");
-        PrintWriter out = resp.getWriter();
         User user;
         if(session == null || (user=(User) session.getAttribute(COOKIE_NAME))==null){
             invalidSessionHandler(resp);
         }
         else{
+            /* Polling Functionality
             //polling has potential to return null message, perhaps utilize http content length=0 feature
             String message = user.getMessageFromQueue();
             if(message!=null)
                 out.println(message);
             else
                 resp.setContentLength(0);
+             */
+            resp.setContentType("text/event-stream");
+            resp.setHeader("Cache-Control", "no-cache");
+            resp.setHeader("Access-Control-Allow-Origin", "*");
+            PrintWriter out = resp.getWriter();
+
+            try{
+                user.interruptAndSwapThread(Thread.currentThread());
+                while(true){
+                    String message = user.readMessage();
+                    out.println("data: "+message + "\r\n\r\n");
+                    out.flush();
+                }
+            } catch(InterruptedException e){
+                resp.setStatus(HttpServletResponse.SC_REQUEST_TIMEOUT);}
         }
     }
 
@@ -70,6 +84,7 @@ public class ChatAPI extends HttpServlet {
              */
             HttpSession session = req.getSession(true);
             if(session.getAttribute(COOKIE_NAME)==null){
+                //rewrite, want to initialize users
                 User tmp = new User(username);
                 session.setAttribute(COOKIE_NAME, tmp);
                 globalchat.addUserToChatRoom(tmp);
